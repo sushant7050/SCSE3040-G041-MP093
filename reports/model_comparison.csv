@@ -1,0 +1,4 @@
+model_name,validation_mae,run_id
+LinearRegression,60.32443925331254,9d96d46abae24864a95edf8656dcc3aa
+GradientBoosting,87.61518530812359,d56be41013f34a2cbe95dda220ce45ff
+RandomForest,102.49976393995492,0497cc00cd134e04aca14fbe6d4bb251
