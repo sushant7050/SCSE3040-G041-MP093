@@ -38,9 +38,9 @@ data_issues:
     true_levels: null      # how many real categories there are after cleaning
 
 tracking:
-  experiment_name: "MP093-v1"
-  best_run_id: "67cf84f49edb4291ba071a071c746ef7"
-  registered_model_name: "mp093-ration-distribution"
+  experiment_name: "mp093-grain-kg"
+  best_run_id: "0ea20f96354d48e6a17a99e743bd3280"
+  registered_model_name: "mp093-grain-model"
   champion_version: 1
   
 monitoring:
