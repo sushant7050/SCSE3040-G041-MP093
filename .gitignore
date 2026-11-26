@@ -11,6 +11,10 @@ __pycache__/
 # IDE
 .vscode/
 
-# MLflow local tracking
-mlflow.db
+# MLflow artifact folders (mlflow.db IS committed)
 mlruns/
+mlartifacts/
+
+# Packaging and test caches
+*.egg-info/
+.pytest_cache/
