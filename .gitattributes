@@ -1,0 +1,2 @@
+# Keep data files byte-for-byte identical (hashes are checked)
+*.csv -text

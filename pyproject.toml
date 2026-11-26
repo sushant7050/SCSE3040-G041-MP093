@@ -1,0 +1,20 @@
+# Minimal packaging so `import mp093` works from anywhere (tests, app, CLI).
+# Install once into the venv with:  pip install -e .
+# Library versions stay pinned in requirements.txt, so none are repeated here.
+
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mp093"
+version = "0.1.0"
+description = "G041 / MP093: predict daily grain_kg for Nagpur ration shops"
+requires-python = ">=3.11"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "."]   # import mp093 (src/) and app (repo root) even without pip install -e .
