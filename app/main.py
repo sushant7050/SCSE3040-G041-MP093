@@ -4,12 +4,17 @@ Run locally (from the repo root, after pip install -e .):
     uvicorn app.main:app --host 0.0.0.0 --port 8000
 """
 
+import time
+
 import joblib
 import pandas as pd
 from fastapi import FastAPI
 from pydantic import BaseModel, ConfigDict, Field
 
 from mp093.config import ROOT, load_params
+from mp093.logging_config import get_logger
+
+log = get_logger("mp093.api")
 
 PARAMS = load_params()
 FEATURES = PARAMS["features"]            # column order the model was trained with
@@ -51,6 +56,17 @@ def health():
 
 @app.post("/predict", response_model=PredictResponse)
 def predict(req: PredictRequest):
-    row = pd.DataFrame([req.model_dump()], columns=FEATURES)
+    start = time.perf_counter()
+    fields = req.model_dump()
+    row = pd.DataFrame([fields], columns=FEATURES)
     prediction = float(model.predict(row)[0])
+    latency_ms = (time.perf_counter() - start) * 1000
+    # One JSON line per prediction. The fields describe a shop, not a person.
+    log.info("prediction", extra={
+        "event": "prediction",
+        **fields,
+        "prediction": prediction,
+        "model_version": MODEL_VERSION,
+        "latency_ms": round(latency_ms, 3),
+    })
     return {"prediction": prediction, "model_version": MODEL_VERSION}
