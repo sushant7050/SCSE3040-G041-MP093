@@ -1,0 +1,83 @@
+# G041 / MP093 settings. Read with yaml.safe_load (mp093.config.load_params).
+# Paths are relative to the repository root.
+
+data:
+  train: data/raw/train.csv
+  later: data/raw/later.csv
+  holdout: data/raw/holdout_features.csv
+
+target: grain_kg
+
+# Column roles, the same in every CSV (PROBLEM.md section 3).
+# "&name" gives a value a name; "*name" below reuses it, so each column
+# name is written only once (plain YAML, works with yaml.safe_load).
+id_column: &id record_id
+date_column: &date date
+group_column: block         # development block
+
+# Exactly the 8 request fields of POST /predict (PROBLEM.md section 5).
+features:
+  - cards_attached
+  - working_hours
+  - biometric_failures
+  - temp_c
+  - stock_kg_morning
+  - days_to_month_end
+  - shop_area
+  - block
+
+# Thresholds for mp093.check_data: HOW each problem is detected.
+# They are not the answers; change one and re-run to see the verdicts move.
+checks:
+  leak_min_corr: 0.95             # |corr with target| above this = leak suspect
+  unit_min_ratio: 5               # one block's median this many times another's
+  unit_factors: [10, 12, 60, 100, 1000]   # exact unit conversions to snap to
+  sentinel_candidates: [-1, -9, -99, -999, -9999, 0, 99, 999, 9999]
+  sentinel_min_rows: 5            # a sentinel repeats at least this often
+  sentinel_min_times_typical: 3   # and this many times a normal value's count
+  stuck_min_days: 7               # a stuck run must cover this many dates
+  typo_min_gap: 3                 # jump between sorted targets that splits typos off
+  typo_min_times_median: 5        # targets above this x median are typo suspects
+  typo_ratio_band: [8, 12]        # target / leak ratio near 10 = extra zero
+
+# Settings for mp093.data.clean(), from reports/findings.yaml.
+cleaning:
+  drop_duplicates: true
+  unit_fix:
+    column: stock_kg_morning
+    group_value: Block South  # a value of group_column
+    factor: 1000            # Block South typed grams; divide by this
+  sentinel:
+    column: cards_attached
+    value: -1               # typed instead of a blank; becomes missing
+  leaking_column: &leak kg_entered_in_epos_at_close
+
+# Never used as model inputs: the id, the date and the leaking column.
+# Same names as above, reused through the anchors.
+drop_columns: [*id, *date, *leak]
+
+# Settings for mp093.train.
+train:
+  val_fraction: 0.2           # last 20% of cleaned train.csv (by date) = validation
+  random_state: 42
+  impute_median: [cards_attached]     # missing (was -1) -> column median
+  one_hot: [shop_area, block]         # text columns -> 0/1 columns
+  # One MLflow run per entry. "type" is a scikit-learn regressor class name.
+  models:
+    - name: ridge
+      type: Ridge
+      params: {alpha: 1.0}
+    - name: rf_depth6
+      type: RandomForestRegressor
+      params: {n_estimators: 300, max_depth: 6}
+    - name: rf_depth12
+      type: RandomForestRegressor
+      params: {n_estimators: 300, max_depth: 12}
+    - name: gbr
+      type: GradientBoostingRegressor
+      params: {n_estimators: 300, max_depth: 3, learning_rate: 0.05}
+
+mlflow:
+  tracking_uri: sqlite:///mlflow.db
+  experiment_name: mp093-grain-kg
+  registered_model_name: mp093-grain-model
