@@ -62,3 +62,52 @@ Never open `train.csv` in Excel and save it: its hash would stop matching.
 
 Every setting (paths, columns, detection thresholds, cleaning, MLflow names)
 is in `params.yaml`.
+
+### API / Docker / Kubernetes
+
+**Run the API locally** (from the repo root, after the Setup above):
+
+```powershell
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+```
+
+`GET /health` returns `{"status": "ok", ...}`. `POST /predict` takes exactly
+the 8 fields below. `working_hours` above 15 or `cards_attached` below 100,
+a missing field or an extra field gets status **422**. Each prediction writes
+one JSON log line to stdout.
+
+```powershell
+Invoke-RestMethod http://localhost:8000/health
+
+$body = @{
+  cards_attached = 742; working_hours = 10.5; biometric_failures = 55
+  temp_c = 38.5; stock_kg_morning = 1497; days_to_month_end = 5
+  shop_area = "tribal"; block = "Block North"
+} | ConvertTo-Json
+Invoke-RestMethod -Method Post -Uri http://localhost:8000/predict -ContentType "application/json" -Body $body
+```
+
+The same request with curl (bash):
+
+```bash
+curl -X POST http://localhost:8000/predict -H "Content-Type: application/json" \
+  -d '{"cards_attached": 742, "working_hours": 10.5, "biometric_failures": 55, "temp_c": 38.5, "stock_kg_morning": 1497, "days_to_month_end": 5, "shop_area": "tribal", "block": "Block North"}'
+```
+
+**Docker** (image `mp093-api:1.0`):
+
+```powershell
+docker build -t mp093-api:1.0 .
+docker run --rm -p 8000:8000 mp093-api:1.0
+```
+
+**Kubernetes** (Deployment `mp093-api`, 2 replicas; Service `mp093-svc`,
+port 80 to 8000). Build the image on the cluster's Docker first, then:
+
+```powershell
+kubectl apply -f k8s/
+kubectl get pods -l app=mp093-api
+kubectl port-forward svc/mp093-svc 8080:80   # then call http://localhost:8080/health
+```
+
+**CI**: `.github/workflows/ci.yml` runs `pytest -q` on every push and pull request.
