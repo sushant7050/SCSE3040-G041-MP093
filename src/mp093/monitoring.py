@@ -43,6 +43,14 @@ def calculate_psi(reference, new_data, bins=10):
     return float(psi)
 
 
+def should_promote(mae_v1, mae_v2, max_ratio=0.95):
+    """The client's rule: promote v2 only if its MAE is at least 5% lower than v1's.
+
+    max_ratio comes from params.yaml (monitoring.promote_max_ratio).
+    Exactly 5% lower (mae_v2 == 0.95 * mae_v1) still counts as promote.
+    """
+    return mae_v2 <= max_ratio * mae_v1
+
 
 if __name__ == "__main__":
     train = pd.read_csv("data/raw/train.csv")
