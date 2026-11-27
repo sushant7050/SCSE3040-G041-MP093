@@ -49,7 +49,7 @@ monitoring:
     working_hours: 5.3029
     biometric_failures: 0.0313
     temp_c: 0.0165
-    stock_kg_morning: 0.2534
+    stock_kg_morning: 0.0380
     days_to_month_end: 0.0761
   most_drifted_feature: "working_hours"
   mae_by_group:
