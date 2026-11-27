@@ -41,7 +41,7 @@ tracking:
   experiment_name: "mp093-grain-kg"
   best_run_id: "0ea20f96354d48e6a17a99e743bd3280"
   registered_model_name: "mp093-grain-model"
-  champion_version: 1
+  champion_version: 2
   
 monitoring:
   psi:
