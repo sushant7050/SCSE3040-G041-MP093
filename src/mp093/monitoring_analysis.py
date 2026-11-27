@@ -8,7 +8,6 @@ from mp093.data import clean, load_raw
 import os
 import mlflow
 import mlflow.sklearn
-from mlflow.tracking import MlflowClient
 
 from mp093.config import ROOT, load_params
 from mp093.data import load_raw
@@ -72,56 +71,23 @@ def retrain_v2(model, params, later):
 
     return v2_model, v1_mae, v2_mae, improvement
 
-def promote_v2(model, params, improvement):
-    if improvement < 5:
-        print("\nV2 not promoted: improvement is below 5%.")
-        return
+# Registering v2 and moving @champion is NOT done here: it is done once by
+# `python -m mp093.register_v2`, which logs the saved models/model_v2.joblib
+# (with data_sha256) as version 2, without retraining.
 
-    os.chdir(ROOT)
 
+def load_v1(params):
+    """v1 is registry version 1. models/model.joblib now holds the champion (v2)."""
+    os.chdir(ROOT)   # so sqlite:///mlflow.db is the repo's database
     mlflow.set_tracking_uri(params["mlflow"]["tracking_uri"])
-
-    experiment_name = params["mlflow"]["experiment_name"]
-    model_name = params["mlflow"]["registered_model_name"]
-
-    mlflow.set_experiment(experiment_name)
-
-    with mlflow.start_run(run_name="MP093-v2-retraining") as run:
-
-        mlflow.log_param("model_version", "v2")
-        mlflow.log_param("retraining_source", "train.csv + first 70% of later.csv")
-        mlflow.log_metric("improvement_percent", improvement)
-
-        info = mlflow.sklearn.log_model(
-            sk_model=model,
-            name="model",
-            serialization_format="cloudpickle",
-            registered_model_name=model_name,
-        )
-
-    client = MlflowClient()
-
-    version = info.registered_model_version
-
-    client.set_registered_model_alias(
-        name=model_name,
-        alias="champion",
-        version=version,
-    )
-
-    print("\nV2 PROMOTED SUCCESSFULLY")
-    print("Registered model:", model_name)
-    print("Version:", version)
-    print("Alias: champion")
-    print("Run ID:", run.info.run_id)
+    name = params["mlflow"]["registered_model_name"]
+    return mlflow.sklearn.load_model(f"models:/{name}/1")
 
 
 def main():
     params = load_params()
 
-    model_path = ROOT / "models" / "model.joblib"
-
-    model = joblib.load(model_path)
+    model = load_v1(params)
 
     later = load_raw(params, "later")
 
@@ -162,11 +128,7 @@ def main():
         params,
         later
     )
-    promote_v2(
-        v2_model,
-        params,
-        improvement
-    )
+    print("\nTo register v2 and move @champion: python -m mp093.register_v2")
 
 
 if __name__ == "__main__":
