@@ -1,6 +1,8 @@
 
 # SCSE3040 - MLOps Mini Project
 
+[![CI](https://github.com/sushant7050/SCSE3040-G041-MP093/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/sushant7050/SCSE3040-G041-MP093/actions/workflows/ci.yml)
+
 ## Group Information
 - Group ID: G041
 - Problem ID: MP093
@@ -41,6 +43,34 @@ retraining once newer data arrived.
 10. **Monitoring:** `mp093.psi_cleaned` computes PSI per numeric column; `mp093.monitoring_analysis` computes v1's MAE per block.
 11. **Retraining:** `mp093.monitoring_analysis` retrains v2; `mp093.register_v2` promotes it only if its MAE is at least 5% lower (v2 is now `@champion`).
 12. **Final predictions:** `mp093.holdout_predictions` writes `predictions/holdout_predictions.csv`.
+
+## Results
+All MAE values are in kg (lower is better). Sources: `reports/findings.yaml`
+and `mlflow.db`.
+
+| Measure | Value |
+|---|---|
+| v1 (ridge) validation MAE (`mlflow.db`) | 55.07 |
+| Most drifted feature, cleaned `train.csv` vs `later.csv` | `working_hours`, PSI 5.3029 |
+| Worst-served block, v1 on `later.csv` | Block East, MAE 595.49 |
+| v1 MAE on the last 30% of `later.csv` (by date) | 292.9967 |
+| v2 MAE on the same rows | 205.8379 |
+| Decision (at least 5% lower MAE required) | promote v2 |
+
+## Repository layout
+```
+.
+├── .dvc/          # DVC configuration
+├── .github/       # GitHub Actions CI workflow
+├── app/           # FastAPI service
+├── data/          # raw data: holdout features and the .dvc pointer files
+├── k8s/           # Kubernetes Deployment and Service
+├── models/        # saved models: model.joblib (served) and model_v2.joblib
+├── predictions/   # holdout predictions
+├── reports/       # findings.yaml, data inspection and model comparison
+├── src/           # mp093 package and early exploration scripts
+└── tests/         # pytest tests
+```
 
 ## Technologies
 - Python
