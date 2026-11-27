@@ -18,3 +18,6 @@ mlartifacts/
 # Packaging and test caches
 *.egg-info/
 .pytest_cache/
+
+# Local backup of mlflow.db, never committed
+mlflow_backup_before_v2.db
