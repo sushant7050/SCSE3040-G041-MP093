@@ -16,7 +16,31 @@
 | Sushant Kumar | S24CSEU2413 |
 
 ## Project Overview
-An MLOps project focused on ration shop distribution prediction.
+Some fair price (ration) shops in Nagpur run out of grain by noon, so families
+are sent back empty handed. The client, the Nagpur Food and Civil Supplies
+Office (a made-up organisation), wants to know how much grain each shop will
+hand out per day so that stock can be sent in time. We predict `grain_kg` per
+shop per day. This is a regression problem, measured by MAE (Mean Absolute
+Error): the average size of a mistake, in kg.
+
+This repo holds the whole path from raw data to a running service: versioned
+data, data checks and cleaning, tracked model training, a prediction API in
+Docker with Kubernetes manifests, automated tests, and monitoring with
+retraining once newer data arrived.
+
+## Pipeline
+1. **Data versioning (DVC):** `data/raw/train.csv.dvc` and `data/raw/later.csv.dvc` pin the exact data files.
+2. **Data checks:** `mp093.check_data` looks for the seven kinds of data problem in `train.csv`.
+3. **Cleaning:** `clean()` in `mp093.data` fixes the problems found, without writing to the CSV.
+4. **Training:** `mp093.train` tracks 4 MLflow runs in `mlflow.db` and registers the best as v1, `@champion`.
+5. **API:** `app/main.py` (FastAPI) rejects `working_hours` above 15 and `cards_attached` below 100 with status 422.
+6. **Logging:** `mp093.logging_config` writes one JSON line to stdout for each prediction.
+7. **Container:** `Dockerfile` builds the image `mp093-api:1.0`.
+8. **CI:** `.github/workflows/ci.yml` (GitHub Actions) runs `pytest` on every push and pull request.
+9. **Kubernetes:** `k8s/deployment.yaml` (2 replicas, health probes) and `k8s/service.yaml`.
+10. **Monitoring:** `mp093.psi_cleaned` computes PSI per numeric column; `mp093.monitoring_analysis` computes v1's MAE per block.
+11. **Retraining:** `mp093.monitoring_analysis` retrains v2; `mp093.register_v2` promotes it only if its MAE is at least 5% lower (v2 is now `@champion`).
+12. **Final predictions:** `mp093.holdout_predictions` writes `predictions/holdout_predictions.csv`.
 
 ## Technologies
 - Python
