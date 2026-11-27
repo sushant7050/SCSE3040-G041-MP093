@@ -58,6 +58,10 @@ Never open `train.csv` in Excel and save it: its hash would stop matching.
 | `python -m mp093.check_data` | Looks for the seven data problems in `train.csv` (results go in `reports/findings.yaml`) |
 | `python -m mp093.data` | Cleans `train.csv` in memory and checks the result; never writes the file |
 | `python -m mp093.train` | Trains every model in `params.yaml`, tracks each run in `mlflow.db`, registers the best as version 1 with alias `@champion`, saves `models/model.joblib` |
+| `python -m mp093.psi_cleaned` | Stage 4: PSI (10 bins) of every numeric column, cleaned `train.csv` vs `later.csv` as given; prints the most drifted column |
+| `python -m mp093.monitoring_analysis` | Stage 4: v1's MAE on `later.csv` per block, retrains v2 on cleaned `train.csv` + the first 70% of `later.csv` (by date), compares v1 and v2 on the last 30%. Already done: re-running it retrains and logs an extra MLflow run |
+| `python -m mp093.register_v2` | Stage 4: registers the saved `models/model_v2.joblib` (no retraining) as version 2 and, if it is at least 5% better, moves `@champion` to it. Runs only once |
+| `python -m mp093.holdout_predictions` | Predicts `holdout_features.csv` with `models:/mp093-grain-model@champion` and writes `predictions/holdout_predictions.csv` (`record_id,prediction`) |
 | `python -m pytest -q` | Runs all tests (no CSV needed) |
 
 Every setting (paths, columns, detection thresholds, cleaning, MLflow names)
