@@ -40,8 +40,14 @@ def retrain_v2(model, params, later):
         combined_train[features],
         combined_train[target]
     )
-    joblib.dump(v2_model, ROOT / "models" / "model_v2.joblib")
-    print("V2 model saved successfully.")
+    # Keep the file once it exists: it is the exact object registered as
+    # version 2 (mp093.register_v2). A refit differs only by float noise.
+    v2_file = ROOT / "models" / "model_v2.joblib"
+    if v2_file.exists():
+        print(f"{v2_file.relative_to(ROOT)} already exists (registered v2); not overwritten.")
+    else:
+        joblib.dump(v2_model, v2_file)
+        print("V2 model saved successfully.")
 
     v1_predictions = model.predict(later_test[features])
     v2_predictions = v2_model.predict(later_test[features])
