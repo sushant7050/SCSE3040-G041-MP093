@@ -44,19 +44,19 @@ tracking:
   champion_version: 1
   
 monitoring:
-  psi:                     # cleaned train.csv vs later.csv, 10 bins
-    cards_attached: null
-    working_hours: null
-    biometric_failures: null
-    temp_c: null
-    stock_kg_morning: null
-    days_to_month_end: null
-  most_drifted_feature: null
-  mae_by_group:            # v1 on later.csv, per value of block
-    'Block North': null
-    'Block South': null
-    'Block East': null
-  worst_served_group: null
-  mae_v1_on_check: null    # v1 on the last 30% of later.csv (by date)
-  mae_v2_on_check: null    # v2 on the same rows
-  decision: null           # promote or keep
+  psi:
+    cards_attached: 0.0721
+    working_hours: 5.3029
+    biometric_failures: 0.0313
+    temp_c: 0.0165
+    stock_kg_morning: 0.2534
+    days_to_month_end: 0.0761
+  most_drifted_feature: "working_hours"
+  mae_by_group:
+    'Block North': 95.753969
+    'Block South': 85.915067
+    'Block East': 595.493437
+  worst_served_group: "Block East"
+  mae_v1_on_check: 292.9967
+  mae_v2_on_check: 205.8379
+  decision: "promote"

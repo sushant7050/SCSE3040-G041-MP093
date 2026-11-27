@@ -13,9 +13,13 @@ def clean_data(df):
     df["cards_attached"] = df["cards_attached"].replace(-1, np.nan)
 
     # 3. Correct unit mix-up in Block South
+    df["stock_kg_morning"] = pd.to_numeric(
+    df["stock_kg_morning"], errors="coerce"
+    ).astype(float)
+
     south_mask = (
-        df["block"].astype(str).str.strip().str.lower()
-        == "block south"
+    df["block"].astype(str).str.strip().str.lower()
+    == "block south"
     )
 
     df.loc[south_mask, "stock_kg_morning"] /= 1000
