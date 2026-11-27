@@ -81,3 +81,11 @@ mlflow:
   tracking_uri: sqlite:///mlflow.db
   experiment_name: mp093-grain-kg
   registered_model_name: mp093-grain-model
+
+# Settings for Stage 4 (PROBLEM.md section 7): drift, the v2 retrain and
+# the client's promotion rule.
+monitoring:
+  psi_bins: 10                  # PSI bins, as in P13
+  later_train_fraction: 0.7     # later.csv sorted by date: first 70% joins v2's training data
+  promote_max_ratio: 0.95       # promote v2 only if mae_v2 <= 0.95 * mae_v1 (at least 5% lower)
+  model_v2_file: models/model_v2.joblib   # the retrained v2, registered by mp093.register_v2
