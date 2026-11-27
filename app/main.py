@@ -19,7 +19,7 @@ log = get_logger("mp093.api")
 PARAMS = load_params()
 FEATURES = PARAMS["features"]            # column order the model was trained with
 MODEL_FILE = ROOT / "models" / "model.joblib"
-MODEL_VERSION = "v1"
+MODEL_VERSION = "v2"                     # the @champion (registry version 2)
 
 # Loaded once, when the app starts, not on every request.
 model = joblib.load(MODEL_FILE)

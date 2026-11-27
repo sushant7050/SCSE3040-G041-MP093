@@ -41,22 +41,22 @@ tracking:
   experiment_name: "mp093-grain-kg"
   best_run_id: "0ea20f96354d48e6a17a99e743bd3280"
   registered_model_name: "mp093-grain-model"
-  champion_version: 1
+  champion_version: 2
   
 monitoring:
-  psi:
+  psi:                     # cleaned train.csv vs later.csv, 10 bins
     cards_attached: 0.0721
     working_hours: 5.3029
     biometric_failures: 0.0313
     temp_c: 0.0165
-    stock_kg_morning: 0.2534
+    stock_kg_morning: 0.0380
     days_to_month_end: 0.0761
   most_drifted_feature: "working_hours"
-  mae_by_group:
+  mae_by_group:            # v1 on later.csv, per value of block
     'Block North': 95.753969
     'Block South': 85.915067
     'Block East': 595.493437
   worst_served_group: "Block East"
-  mae_v1_on_check: 292.9967
-  mae_v2_on_check: 205.8379
-  decision: "promote"
+  mae_v1_on_check: 292.9967  # v1 on the last 30% of later.csv (by date)
+  mae_v2_on_check: 205.8379  # v2 on the same rows
+  decision: "promote"      # promote or keep

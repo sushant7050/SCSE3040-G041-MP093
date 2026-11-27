@@ -1,25 +1,27 @@
-import pandas as pd
+"""PSI of every numeric column: cleaned train.csv vs later.csv (PROBLEM.md 7.1).
 
-from mp093.cleaning import clean_data
+later.csv is already clean (PROBLEM.md section 3), so it is used as given.
+Cleaning it again would divide Block South's stock_kg_morning, which later.csv
+already records in kg, by 1000 a second time.
+
+Run from anywhere (after pip install -e .):
+    python -m mp093.psi_cleaned
+"""
+
+from mp093.config import load_params
+from mp093.data import clean, load_raw
 from mp093.monitoring import calculate_psi
-from mp093.config import ROOT
 
 
 def main():
-    train = pd.read_csv(ROOT / "data" / "raw" / "train.csv")
-    later = pd.read_csv(ROOT / "data" / "raw" / "later.csv")
+    params = load_params()
 
-    # Apply the project's existing cleaning process
-    train_clean = clean_data(train)
-    later_clean = clean_data(later)
+    train_clean = clean(load_raw(params, "train"), params)
+    later = load_raw(params, "later")   # already clean: clean() must NOT be run on it
 
+    # The numeric request fields: every feature that is not a text column.
     numeric_features = [
-        "cards_attached",
-        "working_hours",
-        "biometric_failures",
-        "temp_c",
-        "stock_kg_morning",
-        "days_to_month_end",
+        f for f in params["features"] if f not in params["train"]["one_hot"]
     ]
 
     print("\n--- PSI: Cleaned Train vs Later Data ---\n")
@@ -29,8 +31,8 @@ def main():
     for feature in numeric_features:
         psi = calculate_psi(
             train_clean[feature],
-            later_clean[feature],
-            bins=10
+            later[feature],
+            bins=params["monitoring"]["psi_bins"]
         )
 
         results[feature] = psi
